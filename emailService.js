@@ -2,6 +2,9 @@ const nodemailer = require('nodemailer');
 const { db } = require('./connect');
 require('dotenv').config(); 
 
+const TABLE_NAME = 'email_status';
+const FIELD_NAME = 'email';
+
 const transporter = nodemailer.createTransport({
     service: 'Gmail', 
     auth: {
@@ -12,7 +15,7 @@ const transporter = nodemailer.createTransport({
 
 const sendEmailsSequentially = async (subject, textContent) => {
   try {
-      const res = await db.query('SELECT email FROM email_status');
+      const res = await db.query('SELECT ${FIELD_NAME} FROM ${TABLE_NAME}');
       const emails = res.rows.map(row => row.email);
     for (const email of emails) {
         const mailOptions = {
@@ -35,13 +38,18 @@ const sendEmailsSequentially = async (subject, textContent) => {
   }
 };
 
+const tableExists = async (tableName) => {
+  const res = await db.query(`select exists ( select from information_schema.tables where table_name = $1 )`, [tableName])
+  
+  return res.rows[0].exists;
+}
 
-  function chunkArray(array, size) {
-    const result = [];
-    for (let i = 0; i < array.length; i += size) {
-      result.push(array.slice(i, i + size));
-    }
-    return result;
+function chunkArray(array, size) {
+  const result = [];
+  for (let i = 0; i < array.length; i += size) {
+    result.push(array.slice(i, i + size));
+  }
+  return result;
 }
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
