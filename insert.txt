@@ -1,3 +1,10 @@
+drop table if exists email_status;
+
+create table email_status (
+    id serial primary key,
+    email varchar(255) not null
+);
+
 insert into email_status(email)
 values
 ('1-2022@pmf.kg.ac.rs'),
