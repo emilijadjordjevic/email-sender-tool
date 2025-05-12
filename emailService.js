@@ -10,16 +10,16 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const sendEmailsSequentially = async () => {
+const sendEmailsSequentially = async (subject, textContent) => {
   try {
       const res = await db.query('SELECT email FROM email_status');
       const emails = res.rows.map(row => row.email);
     for (const email of emails) {
         const mailOptions = {
           from: process.env.EMAIL_USER,  
-          to: "49-2022@pmf.kg.ac.rs",
-          subject: 'Test', 
-          text: 'Hello, this is a test email sent from Node.js!',
+          to: email,
+          subject: subject, 
+          text: textContent,
         };
   
         const info = await transporter.sendMail(mailOptions);
@@ -46,7 +46,7 @@ const sendEmailsSequentially = async () => {
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
-const sendBatchEmails = async () => {
+const sendBatchEmails = async (subject, textContent) => {
     try {
       const res = await db.query(`SELECT email FROM email_status`);
       const emails = res.rows.map(row => row.email);
@@ -60,8 +60,8 @@ const sendBatchEmails = async () => {
           from: process.env.EMAIL_USER,
           to: process.env.EMAIL_USER, 
           bcc: batch.join(', '), 
-          subject: 'Test Email for 2022',
-          text: 'Hello, this is a test email sent to 2022 addresses!',
+          subject: subject,
+          text: textContent,
         };
   
         const info = await transporter.sendMail(mailOptions);
